@@ -1,0 +1,11 @@
+domain: k8s.io
+layout: go.kubebuilder.io/v2
+projectName: tor-operator
+repo: github.com/marcus-sa/tor-operator
+resources:
+- group: tor
+  kind: OnionService
+  version: v1alpha1
+version: 3-alpha
+plugins:
+  go.sdk.operatorframework.io/v2-alpha: {}
