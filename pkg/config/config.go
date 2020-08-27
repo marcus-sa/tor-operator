@@ -32,7 +32,7 @@ type portPair struct {
 	PublicPort  int32
 }
 
-func TorConfigForService(onion *torv1alpha1.OnionService) (string, error) {
+func CreateTorConfigForService(onion *torv1alpha1.OnionService) (string, error) {
 	var ports []portPair
 	for _, p := range onion.Spec.Ports {
 		port := portPair{

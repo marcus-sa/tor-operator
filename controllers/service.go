@@ -14,7 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-func (r *OnionServiceReconciler) UpdateServiceStatus(instance *torv1alpha1.OnionService, ctx context.Context, req ctrl.Request) error  {
+func (r *OnionServiceReconciler) UpdateServiceStatus(instance *torv1alpha1.OnionService, ctx context.Context, req ctrl.Request) error {
 	instanceCopy := instance.DeepCopy()
 	service := &corev1.Service{}
 	err := r.Get(ctx, req.NamespacedName, service)

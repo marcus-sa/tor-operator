@@ -41,12 +41,10 @@ spec:
         control-plane: controller-manager
     spec:
       containers:
-      - command:
-        - /root/controller-manager
+      - name: controller-manager
+        image: quay.io/tor-operator/controller-manager
         args:
-        - --enable-leader-election
-        image: controller:latest
-        name: controller-manager
+          - --enable-leader-election
         resources:
           limits:
             cpu: 100m

@@ -32,7 +32,7 @@ type OnionServiceSpec struct {
 	// +optional
 	PrivateKeySecret SecretReference `json:"privateKeySecret,omitempty"`
 
-	// +kubebuilder:validation:Enum=[0,2,3]
+	// +kubebuilder:validation:Enum=2;3
 	Version int `json:"version"`
 
 	// +optional
@@ -81,6 +81,7 @@ type OnionServiceStatus struct {
 
 // OnionService is the Schema for the onionservices API
 // +genclient
+// +k8s:deepcopy-gen=true
 // +kubebuilder:resource:path=onionservices
 type OnionService struct {
 	metav1.TypeMeta   `json:",inline"`

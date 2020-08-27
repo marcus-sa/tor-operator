@@ -12,7 +12,8 @@ endif
 BUNDLE_METADATA_OPTS ?= $(BUNDLE_CHANNELS) $(BUNDLE_DEFAULT_CHANNEL)
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+CONTROLLER_IMG ?= quay.io/tor-operator/controller-manager:latest
+DAEMON_IMG ?= quay.io/tor-operator/daemon-manager:latest
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true"
 
@@ -26,7 +27,7 @@ endif
 all: manager
 
 # Run tests
-test: generate fmt vet manifests
+test: fmt vet manifests
 	go test ./... -coverprofile cover.out
 
 # Build manager binary
@@ -67,12 +68,14 @@ generate: controller-gen
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 # Build the docker image
-docker-build: test
-	docker build . -t ${IMG}
+docker-build:
+	docker build . -f Dockerfile.tor-controller-manager -t ${CONTROLLER_IMG}
+	docker build . -f Dockerfile.tor-daemon-manager -t ${DAEMON_IMG}
 
 # Push the docker image
 docker-push:
-	docker push ${IMG}
+	docker push ${CONTROLLER_IMG}
+	docker push ${DAEMON_IMG}
 
 # find or download client-gen
 # download client-gen if necessary

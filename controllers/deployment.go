@@ -17,10 +17,10 @@ import (
 const (
 	privateKeyVolume = "private-key"
 	torConfigVolume  = "tor-config"
-	imageName = "quay.io/kragniz/tor-daemon-manager:master"
+	imageName        = "quay.io/tor-operator/daemon-manager:latest"
 )
 
-func (r *OnionServiceReconciler) torDeployment(instance *torv1alpha1.OnionService) (*appsv1.Deployment, error)  {
+func (r *OnionServiceReconciler) torDeployment(instance *torv1alpha1.OnionService) (*appsv1.Deployment, error) {
 
 	labels := map[string]string{
 		"app":        "tor",
