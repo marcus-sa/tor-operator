@@ -1,12 +1,11 @@
-
 # Prometheus Monitor Service (Metrics)
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
+  name: tor-daemon-manager-metrics-monitor
+  namespace: tor-system
   labels:
     control-plane: controller-manager
-  name: controller-manager-metrics-monitor
-  namespace: tor-system
 spec:
   endpoints:
     - path: /metrics

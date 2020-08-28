@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: tor-system
   labels:
     api: tor
     control-plane: controller-manager
-  name: tor-system
 ---
 apiVersion: v1
 kind: Service
@@ -42,9 +42,7 @@ spec:
     spec:
       containers:
       - name: controller-manager
-        image: quay.io/tor-operator/controller-manager
-        args:
-          - --enable-leader-election
+        image: quay.io/tor-operator/controller-manager:latest
         resources:
           limits:
             cpu: 100m
@@ -53,3 +51,139 @@ spec:
             cpu: 100m
             memory: 20Mi
       terminationGracePeriodSeconds: 10
+---
+#apiVersion: rbac.authorization.k8s.io/v1
+#kind: ClusterRole
+#metadata:
+#  name: tor
+#  labels:
+#    api: tor
+#    control-plane: controller-manager
+#rules:
+#  - apiGroups:
+#      - ""
+#    resources:
+#      - pods
+#    verbs:
+#      - get
+#      - list
+#      - watch
+#      - create
+#      - update
+#      - patch
+#      - delete
+#  - apiGroups:
+#      - apps
+#    resources:
+#      - deployments
+#    verbs:
+#      - get
+#      - list
+#      - watch
+#      - create
+#      - update
+#      - patch
+#      - delete
+#  - apiGroups:
+#      - ""
+#    resources:
+#      - services
+#    verbs:
+#      - get
+#      - list
+#      - watch
+#      - create
+#      - update
+#      - patch
+#      - delete
+#  - apiGroups:
+#      - ""
+#    resources:
+#      - secrets
+#    verbs:
+#      - get
+#      - list
+#      - watch
+#      - create
+#      - update
+#      - patch
+#      - delete
+#  - apiGroups:
+#      - ""
+#    resources:
+#      - serviceaccounts
+#    verbs:
+#      - get
+#      - list
+#      - watch
+#      - create
+#      - update
+#      - patch
+#      - delete
+#  - apiGroups:
+#      - rbac.authorization.k8s.io
+#    resources:
+#      - roles
+#    verbs:
+#      - get
+#      - list
+#      - watch
+#      - create
+#      - update
+#      - patch
+#      - delete
+#  - apiGroups:
+#      - rbac.authorization.k8s.io
+#    resources:
+#      - rolebindings
+#    verbs:
+#      - get
+#      - list
+#      - watch
+#      - create
+#      - update
+#      - patch
+#      - delete
+#  - apiGroups:
+#      - ""
+#    resources:
+#      - events
+#    verbs:
+#      - get
+#      - list
+#      - watch
+#      - create
+#      - update
+#      - patch
+#      - delete
+#  - apiGroups:
+#      - tor.k8s.io
+#    resources:
+#      - '*'
+#    verbs:
+#      - '*'
+#---
+#apiVersion: rbac.authorization.k8s.io/v1
+#kind: ClusterRoleBinding
+#metadata:
+#  name: tor
+#  labels:
+#    api: tor
+#    control-plane: controller-manager
+#roleRef:
+#  apiGroup: rbac.authorization.k8s.io
+#  kind: ClusterRole
+#  name: tor
+#subjects:
+#  - kind: ServiceAccount
+#    name: default
+#    namespace: tor-system
+#---
+#apiVersion: v1
+#kind: ServiceAccount
+#metadata:
+#  name: tor
+#  labels:
+#    api: tor
+#    control-plane: controller-manager
+#---

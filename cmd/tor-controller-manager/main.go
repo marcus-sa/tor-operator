@@ -1,4 +1,4 @@
-package tor_controller_manager
+package main
 
 import (
 	"flag"
@@ -53,6 +53,7 @@ func main() {
 
 	if err = (&controllers.OnionServiceReconciler{
 		Client: mgr.GetClient(),
+		Recorder: mgr.GetEventRecorderFor("OnionServiceController"),
 		Log:    ctrl.Log.WithName("controllers").WithName("OnionService"),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {

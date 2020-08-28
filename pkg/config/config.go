@@ -9,6 +9,7 @@ import (
 
 const configFormat = `
 SocksPort 0
+ControlPort 9051
 HiddenServiceDir {{ .ServiceDir }}
 HiddenServiceVersion {{ .Version }}
 {{ range .Ports }}

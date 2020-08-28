@@ -16,15 +16,20 @@ COPY controllers/ controllers/
 COPY pkg/ pkg/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o tor-daemon-manager ./cmd/tor-daemon-manager/main.go
-RUN chmod +x ./tor-daemon-manager
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o bin/tor-daemon-manager ./cmd/tor-daemon-manager/main.go
+RUN chmod +x ./bin/tor-daemon-manager
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
+FROM alpine:3.12.0
 WORKDIR /
-COPY --from=builder /workspace/tor-daemon-manager .
-#USER nonroot:nonroot
+COPY --from=builder /workspace/bin/tor-daemon-manager .
+
+RUN apk update \
+  && apk add tor --update-cache \
+  && rm -rf /var/cache/apk/* \
+  && mkdir -p /run/tor/service \
+  && chmod 700 /run/tor/service
 
 ENTRYPOINT ["/tor-daemon-manager"]
 

@@ -1,7 +1,36 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: http-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: http-app
+  template:
+    metadata:
+      labels:
+        app: http-app
+    spec:
+      containers:
+        - name: http-app
+          image: k8s.gcr.io/echoserver:1.10
+          ports:
+            - containerPort: 8080
+---
 apiVersion: tor.k8s.io/v1alpha1
 kind: OnionService
 metadata:
-  name: onionservice-sample
+  name: example-onion-service
 spec:
-  # Add fields here
-  foo: bar
+  version: 3
+  selector:
+    app: http-app
+  ports:
+    - targetPort: 8080
+      publicPort: 80
+  privateKeySecret:
+    name: example-onion-key
+    key: private_key
+---

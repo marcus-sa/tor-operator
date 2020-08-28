@@ -1,0 +1,44 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+    operators.operatorframework.io/builder: operator-sdk-v1.0.0
+    operators.operatorframework.io/project_layout: go.kubebuilder.io/v2
+  name: tor-operator.v0.0.1
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions: {}
+  description: tor
+  displayName: tor
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: []
+    strategy: deployment
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - tor
+  links:
+  - name: Tor Operator
+    url: https://tor-operator.domain
+  maintainers:
+  - email: marcus-sa@outlook.com
+    name: marcus
+  maturity: alpha
+  provider:
+    name: tor
+    url: github.com/marcus-sa/tor-operator
+  version: 0.0.1

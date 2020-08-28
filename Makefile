@@ -97,6 +97,14 @@ else
 CONTROLLER_GEN=$(shell which controller-gen)
 endif
 
+k-apply:
+	kubectl apply -f config/manager/manager.yaml
+	kubectl apply -f config/samples/tor_v1alpha1_onionservice.yaml
+
+k-delete:
+	kubectl delete -f config/samples/tor_v1alpha1_onionservice.yaml
+	kubectl delete -f config/manager/manager.yaml
+
 kustomize:
 ifeq (, $(shell which kustomize))
 	@{ \
@@ -116,7 +124,7 @@ endif
 .PHONY: bundle
 bundle: manifests
 	operator-sdk generate kustomize manifests -q
-	cd config/manager && $(KUSTOMIZE) edit set image controller=$(IMG)
+	cd config/manager && $(KUSTOMIZE) edit set image controller=$(CONTROLLER_IMG)
 	$(KUSTOMIZE) build config/manifests | operator-sdk generate bundle -q --overwrite --version $(VERSION) $(BUNDLE_METADATA_OPTS)
 	operator-sdk bundle validate ./bundle
 

@@ -1,0 +1,50 @@
+apiVersion: operators.coreos.com/v1alpha1
+kind: ClusterServiceVersion
+metadata:
+  annotations:
+    alm-examples: '[]'
+    capabilities: Basic Install
+    operators.operatorframework.io/builder: operator-sdk-v1.0.0
+    operators.operatorframework.io/project_layout: go.kubebuilder.io/v2
+  name: tor-operator.vX.Y.Z
+  namespace: placeholder
+spec:
+  apiservicedefinitions: {}
+  customresourcedefinitions:
+    owned:
+    - description: OnionService is the Schema for the onionservices API
+      displayName: Onion Service
+      kind: OnionService
+      name: onionservices.tor.k8s.io
+      version: v1alpha1
+  description: tor
+  displayName: tor
+  icon:
+  - base64data: ""
+    mediatype: ""
+  install:
+    spec:
+      deployments: null
+    strategy: ""
+  installModes:
+  - supported: true
+    type: OwnNamespace
+  - supported: true
+    type: SingleNamespace
+  - supported: false
+    type: MultiNamespace
+  - supported: true
+    type: AllNamespaces
+  keywords:
+  - tor
+  links:
+  - name: Tor Operator
+    url: https://tor-operator.domain
+  maintainers:
+  - email: marcus-sa@outlook.com
+    name: marcus
+  maturity: alpha
+  provider:
+    name: tor
+    url: github.com/marcus-sa/tor-operator
+  version: 0.0.0

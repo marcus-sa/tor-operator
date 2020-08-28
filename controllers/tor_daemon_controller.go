@@ -26,15 +26,16 @@ type TorDaemonReconciler struct {
 	OnionServiceNamespace string
 	OnionServiceName      string
 	cmd                   *exec.Cmd
-	ctx                   *context.Context
+	ctx                   context.Context
 	instance              *torv1alpha1.OnionService
+	//metricsExporter 	  *metrics.TorDaemonMetricsExporter
 }
 
 func (r *TorDaemonReconciler) start() {
 	go func() {
 		for {
 			fmt.Println("Starting tor...")
-			r.cmd = exec.CommandContext(*r.ctx,
+			r.cmd = exec.CommandContext(r.ctx,
 				"tor",
 				"-f", "/run/tor/torfile",
 				"--allow-missing-torrc",
@@ -117,7 +118,7 @@ func (r *TorDaemonReconciler) updateOnionServiceStatus() error {
 		instanceCopy := r.instance.DeepCopy()
 		instanceCopy.Status.Hostname = newHostname
 
-		err = r.Update(*r.ctx, instanceCopy)
+		err = r.Update(r.ctx, instanceCopy)
 		return err
 	}
 	return nil
@@ -125,10 +126,8 @@ func (r *TorDaemonReconciler) updateOnionServiceStatus() error {
 
 func (r *TorDaemonReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 	ctx, cancel := context.WithCancel(context.Background())
-	r.ctx = &ctx
+	r.ctx = ctx
 	defer cancel()
-
-	os.Chmod("/run/tor/service", 0700)
 
 	// Watch ReplicaSets and enqueue ReplicaSet object key
 	//if err := r.Watch(&source.Kind{Type: &torv1alpha1.OnionService{}}, &handler.EnqueueRequestForObject{}); err != nil {
@@ -162,9 +161,15 @@ func (r *TorDaemonReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
 		return ctrl.Result{}, err
 	}
 
+	if err := r.syncOnionConfig(); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	//metrics.TorDaemonMetricsExporter.Start()
+
 	return ctrl.Result{}, r.syncOnionConfig()
 }
 
 func (r *TorDaemonReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).Complete(r)
+	return ctrl.NewControllerManagedBy(mgr).For(&torv1alpha1.OnionService{}).Complete(r)
 }

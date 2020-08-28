@@ -16,14 +16,13 @@ COPY controllers/ controllers/
 COPY pkg/ pkg/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o tor-controller-manager ./cmd/tor-controller-manager/main.go
-RUN chmod +x ./tor-controller-manager
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o bin/tor-controller-manager ./cmd/tor-controller-manager/main.go
+RUN chmod +x ./bin/tor-controller-manager
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
+FROM alpine:3.12.0
 WORKDIR /
-COPY --from=builder /workspace/tor-controller-manager .
-#USER nonroot:nonroot
+COPY --from=builder /workspace/bin/tor-controller-manager .
 
 ENTRYPOINT ["/tor-controller-manager"]

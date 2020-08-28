@@ -23,7 +23,9 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -35,7 +37,6 @@ const (
 	// ErrResourceExists is used as part of the Event 'reason' when a Foo fails
 	// to sync due to a Deployment of the same name already existing.
 	ErrResourceExists = "ErrResourceExists"
-
 	// MessageResourceExists is the message used for Events when a resource
 	// fails to sync due to a Deployment already existing
 	MessageResourceExists = "Resource %q already exists and is not managed by Foo"
@@ -49,10 +50,30 @@ type OnionServiceReconciler struct {
 	client.Client
 	Log    logr.Logger
 	Scheme *runtime.Scheme
-
 	// recorder is an event recorder for recording Event resources to the
 	// Kubernetes API.
-	recorder record.EventRecorder
+	Recorder record.EventRecorder
+
+	ctx      context.Context
+	instance *torv1alpha1.OnionService
+}
+
+func (r *OnionServiceReconciler) NewObjectMeta() *metav1.ObjectMeta {
+	return &metav1.ObjectMeta{
+		Name: r.instance.Name,
+		Namespace: r.instance.Namespace,
+		OwnerReferences: []metav1.OwnerReference{
+			*r.NewOwnerReference(),
+		},
+	}
+}
+
+func (r *OnionServiceReconciler) NewOwnerReference() *metav1.OwnerReference {
+	return metav1.NewControllerRef(r.instance, schema.GroupVersionKind{
+		Group:   torv1alpha1.GroupVersion.Group,
+		Version: torv1alpha1.GroupVersion.Version,
+		Kind:    "OnionService",
+	})
 }
 
 // +kubebuilder:informers:group=core,version=v1,kind=Pod
@@ -70,11 +91,12 @@ type OnionServiceReconciler struct {
 // +kubebuilder:rbac:groups=rbac.authorization.k8s.io,resources=rolebindings,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=events,verbs=get;list;watch;create;update;patch;delete
 func (r *OnionServiceReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error) {
-	ctx := context.Background()
+	r.ctx = context.Background()
 	log := r.Log.WithValues(req.Name, req.NamespacedName)
 
-	instance := &torv1alpha1.OnionService{}
-	if err := r.Get(ctx, req.NamespacedName, instance); err != nil {
+	r.instance = &torv1alpha1.OnionService{}
+
+	if err := r.Get(r.ctx, req.NamespacedName, r.instance); err != nil {
 		log.Error(err, "unable to fetch OnionService")
 
 		if errors.IsNotFound(err) {
@@ -84,21 +106,40 @@ func (r *OnionServiceReconciler) Reconcile(req ctrl.Request) (ctrl.Result, error
 		return ctrl.Result{}, err
 	}
 
-	if err := r.ReconcileService(instance, ctx, req); err != nil {
-		return ctrl.Result{}, err
+	var errs []error
+
+	if err := r.ReconcileServiceAccount(req); err != nil {
+		errs = append(errs, err)
+		//return ctrl.Result{}, err
 	}
 
-	if err := r.ReconcileDeployment(instance, ctx, req); err != nil {
-		return ctrl.Result{}, err
+	if err := r.ReconcileRole(req); err != nil {
+		errs = append(errs, err)
+		//return ctrl.Result{}, err
+	}
+
+	if err := r.ReconcileRoleBinding(req); err != nil {
+		errs = append(errs, err)
+		//return ctrl.Result{}, err
+	}
+
+	if err := r.ReconcileService(req); err != nil {
+		errs = append(errs, err)
+		//return ctrl.Result{}, err
+	}
+
+	if err := r.ReconcileDeployment(req); err != nil {
+		errs = append(errs, err)
+		//return ctrl.Result{}, err
 	}
 
 	// Finally, we update the status block of the OnionService resource to reflect the
 	// current state of the world
-	if err := r.UpdateServiceStatus(instance, ctx, req); err != nil {
+	if err := r.UpdateServiceStatus(req); err != nil {
 		return ctrl.Result{}, err
 	}
 
-	r.recorder.Event(instance, corev1.EventTypeNormal, SuccessSynced, MessageResourceSynced)
+	r.Recorder.Event(r.instance, corev1.EventTypeNormal, SuccessSynced, MessageResourceSynced)
 
 	return ctrl.Result{}, nil
 }

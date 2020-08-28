@@ -1,4 +1,4 @@
-package tor_daemon_manager
+package main
 
 import (
 	"flag"
@@ -12,11 +12,15 @@ import (
 	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	// +kubebuilder:scaffold:imports
 )
 
 var (
 	scheme   = runtime.NewScheme()
 	setupLog = ctrl.Log.WithName("setup")
+	onionServiceNamespace string
+	metricsAddr string
+	onionServiceName string
 )
 
 func init() {
@@ -24,28 +28,25 @@ func init() {
 
 	utilruntime.Must(torv1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
-}
 
-func main() {
-	var onionServiceNamespace string
-	var metricsAddr string
-	var onionServiceName string
-	flag.StringVar(&onionServiceNamespace, "onionServiceNamespace", "",
-		"The onionServiceNamespace of the OnionService to manage.")
+	flag.StringVar(&onionServiceNamespace, "namespace", "",
+		"The namespace of the OnionService to manage.")
 	flag.StringVar(&onionServiceName, "name", "",
 		"The name of the OnionService to manage.")
 	flag.StringVar(&metricsAddr, "metrics-addr", ":8080", "The address the metric endpoint binds to.")
-	flag.Parse()
+}
 
+func main() {
+	flag.Parse()
 	ctrl.SetLogger(zap.New(zap.UseDevMode(true)))
 
 	var errs []error
 
 	if onionServiceName == "" {
-		errs = append(errs, fmt.Errorf("-name flag cannot be empty"))
+		errs = append(errs, fmt.Errorf("--name flag cannot be empty"))
 	}
 	if onionServiceNamespace == "" {
-		errs = append(errs, fmt.Errorf("-namespace flag cannot be empty"))
+		errs = append(errs, fmt.Errorf("--namespace flag cannot be empty"))
 	}
 	if err := errors.NewAggregate(errs); err != nil {
 		ctrl.Log.Error(err, "unable to set up overall controller manager")
